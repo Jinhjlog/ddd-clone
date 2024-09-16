@@ -1,3 +1,3 @@
 export * from './identifier';
-export * from './Entity';
+export * from './entity';
 export * from './unique.entity-id';
