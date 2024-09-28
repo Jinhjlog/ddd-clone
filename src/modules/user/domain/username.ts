@@ -1,11 +1,11 @@
 import { ValueObject } from '@lib/value-object';
 import { left, right } from 'effect/Either';
 
-export enum UsernameError {
-  TooShort = '3자 이상 입력되어야 합니다.',
-  TooLong = '15자 이상 입력될 수 없습니다.',
-  UsernameNull = '유저 이름을 입력해주세요.',
-}
+export const UsernameError = {
+  TooShort: '3자 이상 입력되어야 합니다.',
+  TooLong: '15자 이상 입력될 수 없습니다.',
+  UsernameNull: '유저 이름을 입력해주세요.',
+} as const;
 
 export interface UsernameProps {
   value: string;

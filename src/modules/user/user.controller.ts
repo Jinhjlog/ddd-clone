@@ -3,19 +3,24 @@ import {
   Controller,
   HttpException,
   HttpStatus,
+  Inject,
   Post,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { Email } from './domain/email';
+import { CreateUserDto } from './dtos';
+import {
+  CreateUserUsecase,
+  ExmailAlreadyExistsError,
+  UsernameAlreadyExistsError,
+} from './useCase';
 import { Either } from 'effect';
-import { User } from './domain/user';
-import { Phone } from './domain/phone';
-import { Username } from './domain/username';
-import { Password } from './domain/password';
+import { DOMPURIFY } from 'src/core/providers/dompurify.provider';
+import { DOMPurifyI } from 'dompurify';
 
 @Controller('users')
 export class UserController {
+  constructor(@Inject(DOMPURIFY) private readonly dompurify: DOMPurifyI) {}
+
   @ApiOperation({
     summary: '',
     description: '',
@@ -24,33 +29,31 @@ export class UserController {
     description: '',
   })
   @Post()
-  async create(
-    @Body() { username, email, password, phone }: CreateUserDto,
-  ): Promise<any> {
-    const emailOrError = Email.create(email);
-    const phoneOrError = Phone.create(phone);
-    const usernameOrError = Username.create(username);
-    const passwordOrError = await Password.create(password);
-    // 1. Either를 사용하는 이유? 장점을 아직까지 모르겠음
-    // 2. Presentation Layer에서 지금 처리하는 일이 너무 많음
-    // 3. 컨트롤러의 역할에 알맞게 코드를 분리할 것
-    const userOrProps = Either.all([
-      emailOrError,
-      phoneOrError,
-      usernameOrError,
-      passwordOrError,
-    ]);
+  async create(@Body() body: CreateUserDto): Promise<void> {
+    const phone = this.dompurify.sanitize(body.phone);
+    const email = this.dompurify.sanitize(body.email);
+    const username = this.dompurify.sanitize(body.username);
+    const password = this.dompurify.sanitize(body.password);
 
-    Either.match(userOrProps, {
+    const successOrError = await new CreateUserUsecase().execute({
+      phone,
+      email,
+      username,
+      password,
+    });
+
+    // 컨트롤러의 역할인 응답을 처리하는 부분을 작성
+    Either.match(successOrError, {
       onLeft: (e) => {
-        throw new HttpException(e, HttpStatus.BAD_REQUEST);
+        switch (e) {
+          case ExmailAlreadyExistsError:
+          case UsernameAlreadyExistsError:
+            throw new HttpException(e, HttpStatus.BAD_REQUEST);
+          default:
+            throw new HttpException(e, HttpStatus.BAD_REQUEST);
+        }
       },
-      onRight: ([email, phone, username, password]) => {
-        const user = new User({ email, username, password, phone });
-        console.log('POST /user');
-        console.log(user);
-        console.log('------------');
-      },
+      onRight: (result) => {},
     });
   }
 }

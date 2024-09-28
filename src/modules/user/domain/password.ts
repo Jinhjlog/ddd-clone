@@ -6,10 +6,10 @@ export interface PasswordProps {
   value: string;
 }
 
-export enum PasswordError {
-  TooShort = '비밀번호는 6자 이상 입력되어야 합니다.',
-  TooLong = '비밀번호는 17자 이하로 입력되어야 합니다.',
-}
+export const PasswordError = {
+  TooShort: '비밀번호는 6자 이상 입력되어야 합니다.',
+  TooLong: '비밀번호는 17자 이하로 입력되어야 합니다.',
+} as const;
 
 export class Password extends ValueObject<PasswordProps> {
   static readonly MIN_LENGTH = 6;

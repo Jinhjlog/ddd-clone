@@ -5,10 +5,10 @@ interface PhoneProps {
   value: string;
 }
 
-export enum PhoneError {
-  InvalidPhone = '유효하지 않은 전화번호 형식입니다.',
-  PhoneNull = '전화번호를 입력해주세요.',
-}
+export const PhoneError = {
+  InvalidPhone: '유효하지 않은 전화번호 형식입니다.',
+  PhoneNull: '전화번호를 입력해주세요.',
+} as const;
 
 export class Phone extends ValueObject<PhoneProps> {
   private constructor(props: PhoneProps) {

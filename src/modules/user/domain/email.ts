@@ -1,9 +1,9 @@
 import { ValueObject } from '@lib/value-object';
 import { left, right } from 'effect/Either';
 
-export enum EmailError {
-  InvalidEmail = '유효하지 않은 이메일 형식입니다.',
-}
+export const EmailError = {
+  InvalidEmail: '유효하지 않은 이메일 형식입니다.',
+} as const;
 
 interface EmailProps {
   value: string;
