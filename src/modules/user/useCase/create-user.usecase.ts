@@ -14,9 +14,9 @@ import { CreateUserProps } from '../domain/user.types';
 import { ValueOf } from 'type-fest';
 import { Either } from 'effect';
 import { SuccessResultDto } from '../dtos';
-
-const mockExistsUsername = false;
-const mockExistsEmail = false;
+import { Inject } from '@nestjs/common';
+import { USER_REPOSITORY } from '../user.constants';
+import { UserRepository } from '../infra';
 
 export const ExmailAlreadyExistsError = '이미 존재하는 이메일입니다.' as const;
 export const UsernameAlreadyExistsError =
@@ -32,6 +32,10 @@ type CreateUserError =
 type Result = Promise<Either.Either<SuccessResultDto, CreateUserError>>;
 
 export class CreateUserUsecase implements Usecase<any, Result> {
+  constructor(
+    @Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
+  ) {}
+
   async execute(request: CreateUserProps): Result {
     const emailOrError = Email.create(request.email);
     const phoneOrError = Phone.create(request.phone);
@@ -50,11 +54,16 @@ export class CreateUserUsecase implements Usecase<any, Result> {
     }
 
     const [email, phone, username, password] = propsOrError.right;
-    if (mockExistsEmail) {
+
+    const emailExists = await this.userRepository.existsEmail(email);
+
+    if (emailExists) {
       return Either.left(ExmailAlreadyExistsError);
     }
 
-    if (mockExistsUsername) {
+    const usernameExists = await this.userRepository.existsUsername(username);
+
+    if (usernameExists) {
       return Either.left(UsernameAlreadyExistsError);
     }
 
@@ -65,7 +74,7 @@ export class CreateUserUsecase implements Usecase<any, Result> {
       password,
     });
 
-    // save user to db
+    await this.userRepository.create(user);
 
     return Either.right(new SuccessResultDto());
   }

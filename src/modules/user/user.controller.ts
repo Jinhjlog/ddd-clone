@@ -19,7 +19,10 @@ import { DOMPurifyI } from 'dompurify';
 
 @Controller('users')
 export class UserController {
-  constructor(@Inject(DOMPURIFY) private readonly dompurify: DOMPurifyI) {}
+  constructor(
+    @Inject(DOMPURIFY) private readonly dompurify: DOMPurifyI,
+    private readonly createUserUsecase: CreateUserUsecase,
+  ) {}
 
   @ApiOperation({
     summary: '',
@@ -35,7 +38,7 @@ export class UserController {
     const username = this.dompurify.sanitize(body.username);
     const password = this.dompurify.sanitize(body.password);
 
-    const successOrError = await new CreateUserUsecase().execute({
+    const successOrError = await this.createUserUsecase.execute({
       phone,
       email,
       username,
