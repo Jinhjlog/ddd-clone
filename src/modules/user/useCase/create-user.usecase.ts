@@ -67,7 +67,7 @@ export class CreateUserUsecase implements Usecase<any, Result> {
       return Either.left(UsernameAlreadyExistsError);
     }
 
-    const user = new User({
+    const user = User.create({
       email,
       phone,
       username,
