@@ -10,7 +10,7 @@ describe('Password', () => {
       // when & then
       expect(
         ((await Password.create(password)) as Left<never, Password>).left,
-      ).toBe(PasswordError.TooShort);
+      ).toBe(PasswordError.TooShortPassword);
     });
     it('비밀번호는 17자 이하로 입력되어야 합니다.', async () => {
       // given
@@ -19,7 +19,7 @@ describe('Password', () => {
       // when & then
       expect(
         ((await Password.create(password)) as Left<never, Password>).left,
-      ).toBe(PasswordError.TooLong);
+      ).toBe(PasswordError.TooLongPassword);
     });
     it('비밀번호 객체를 생성합니다.', async () => {
       // given

@@ -7,11 +7,13 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
-import { CreateUserDto } from './dtos';
+import { CreateUserDto, SignInDto } from './dtos';
 import {
   CreateUserUsecase,
   ExmailAlreadyExistsError,
+  SignInUsecase,
   UsernameAlreadyExistsError,
+  SignInError,
 } from './useCase';
 import { Either } from 'effect';
 import { DOMPURIFY } from 'src/core/providers/dompurify.provider';
@@ -22,6 +24,7 @@ export class UserController {
   constructor(
     @Inject(DOMPURIFY) private readonly dompurify: DOMPurifyI,
     private readonly createUserUsecase: CreateUserUsecase,
+    private readonly signInUsecase: SignInUsecase,
   ) {}
 
   @ApiOperation({
@@ -51,12 +54,45 @@ export class UserController {
         switch (e) {
           case ExmailAlreadyExistsError:
           case UsernameAlreadyExistsError:
-            throw new HttpException(e, HttpStatus.BAD_REQUEST);
+            throw new HttpException(e, HttpStatus.BAD_REQUEST); // change http status -> Conflict
           default:
             throw new HttpException(e, HttpStatus.BAD_REQUEST);
         }
       },
       onRight: (result) => {},
+    });
+  }
+
+  @ApiOperation({
+    summary: '',
+    description: '',
+  })
+  @ApiCreatedResponse({
+    description: '',
+  })
+  async signIn(@Body() body: SignInDto): Promise<any> {
+    const username = this.dompurify.sanitize(body.username);
+    const password = this.dompurify.sanitize(body.password);
+
+    const tokenOrError = await this.signInUsecase.execute({
+      username,
+      password,
+    });
+
+    Either.match(tokenOrError, {
+      onLeft: (e) => {
+        switch (e) {
+          case SignInError.InvalidPasswordError:
+            throw new HttpException(e, HttpStatus.UNAUTHORIZED);
+          case SignInError.UserNotExistingError:
+            throw new HttpException(e, HttpStatus.NOT_FOUND);
+          default:
+            throw new HttpException(e, HttpStatus.BAD_REQUEST);
+        }
+      },
+      onRight: (token) => {
+        return token;
+      },
     });
   }
 }

@@ -9,7 +9,7 @@ describe('Username', () => {
 
       // when & then
       expect((Username.create(username) as Left<never, Username>).left).toBe(
-        UsernameError.TooShort,
+        UsernameError.TooShortUsername,
       );
     });
 
@@ -19,7 +19,7 @@ describe('Username', () => {
 
       // when & then
       expect((Username.create(username) as Left<never, Username>).left).toBe(
-        UsernameError.TooLong,
+        UsernameError.TooLongUsername,
       );
     });
 

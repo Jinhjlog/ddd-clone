@@ -2,8 +2,8 @@ import { ValueObject } from '@lib/value-object';
 import { left, right } from 'effect/Either';
 
 export const UsernameError = {
-  TooShort: '3자 이상 입력되어야 합니다.',
-  TooLong: '15자 이상 입력될 수 없습니다.',
+  TooShortUsername: '3자 이상 입력되어야 합니다.',
+  TooLongUsername: '15자 이상 입력될 수 없습니다.',
   UsernameNull: '유저 이름을 입력해주세요.',
 } as const;
 
@@ -25,13 +25,17 @@ export class Username extends ValueObject<UsernameProps> {
     }
 
     if (username.length < this.MIN_LENGTH) {
-      return left(UsernameError.TooShort);
+      return left(UsernameError.TooShortUsername);
     }
 
     if (username.length > this.MAX_LENGTH) {
-      return left(UsernameError.TooLong);
+      return left(UsernameError.TooLongUsername);
     }
 
     return right(new Username({ value: username }));
+  }
+
+  static unsafeCreate(username: string): Username {
+    return new Username({ value: username });
   }
 }

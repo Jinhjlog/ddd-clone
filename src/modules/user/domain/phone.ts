@@ -32,4 +32,8 @@ export class Phone extends ValueObject<PhoneProps> {
 
     return right(new Phone({ value: phone }));
   }
+
+  static unsafeCreate(phone: string): Phone {
+    return new Phone({ value: phone });
+  }
 }

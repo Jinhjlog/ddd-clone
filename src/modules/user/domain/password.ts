@@ -7,8 +7,8 @@ export interface PasswordProps {
 }
 
 export const PasswordError = {
-  TooShort: '비밀번호는 6자 이상 입력되어야 합니다.',
-  TooLong: '비밀번호는 17자 이하로 입력되어야 합니다.',
+  TooShortPassword: '비밀번호는 6자 이상 입력되어야 합니다.',
+  TooLongPassword: '비밀번호는 17자 이하로 입력되어야 합니다.',
 } as const;
 
 export class Password extends ValueObject<PasswordProps> {
@@ -21,17 +21,25 @@ export class Password extends ValueObject<PasswordProps> {
 
   static async create(password: string) {
     if (password.length < this.MIN_LENGTH) {
-      return left(PasswordError.TooShort);
+      return left(PasswordError.TooShortPassword);
     }
 
     if (password.length > this.MAX_LENGTH) {
-      return left(PasswordError.TooLong);
+      return left(PasswordError.TooLongPassword);
     }
 
     return right(new Password({ value: await this.hashPassword(password) }));
   }
 
+  static unsafeCreate(password: string): Password {
+    return new Password({ value: password });
+  }
+
   private static hashPassword(password: string) {
     return bcrypt.hash(password, 10);
+  }
+
+  comparePassword(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.props.value);
   }
 }

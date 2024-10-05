@@ -29,4 +29,8 @@ export class Email extends ValueObject<EmailProps> {
 
     return right(new Email({ value: email }));
   }
+
+  static unsafeCreate(email: string): Email {
+    return new Email({ value: email });
+  }
 }
